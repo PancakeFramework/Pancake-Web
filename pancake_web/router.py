@@ -41,7 +41,11 @@ def controller(prefix: str = ""):
         # 扫描类方法上的 @get/@post 等装饰器标记
         for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
             if hasattr(method, "_route_method"):
-                full_path = prefix.rstrip("/") + method._route_path
+                route_path = method._route_path
+                if route_path == "/":
+                    full_path = prefix if prefix else "/"
+                else:
+                    full_path = prefix.rstrip("/") + route_path
                 if not full_path:
                     full_path = "/"
                 _route_registry[(method._route_method, full_path)] = (cls, name)
