@@ -169,7 +169,7 @@ def _convert_serializable(obj):
     return obj
 
 
-async def resolve_response(result) -> web.Response:
+async def resolve_response(result, _handler=None) -> web.Response:
     """自动将 handler 返回值转为 web.Response
 
     转换规则:
