@@ -49,6 +49,12 @@ class Main(InitAction):
         export(JsonResponse)
         export(HtmlResponse)
 
+        # 模板渲染
+        from pancake_web.template import render, template, register_filter
+        export(render)
+        export(template)
+        export(register_filter)
+
         # Web 服务器
         from pancake_web.server import WebServer
         export(WebServer)

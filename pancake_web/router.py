@@ -90,7 +90,11 @@ def register_routes(app: web.Application):
                 kwargs = await resolve_handler_args(request, _handler)
                 # 2. 调用 handler
                 result = await _handler(**kwargs)
-                # 3. 自动转为 Response
+                # 3. @template 自动渲染
+                if isinstance(result, dict) and hasattr(_handler, "_template_name"):
+                    from pancake_web.template import render
+                    return render(_handler._template_name, **result)
+                # 4. 自动转为 Response
                 return await resolve_response(result)
             except web.HTTPException:
                 raise
