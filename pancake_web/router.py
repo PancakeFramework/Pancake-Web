@@ -71,8 +71,8 @@ def register_routes(app: web.Application):
     从 DoughFactory 获取 Controller 实例（IoC），
     自动解析参数并转换返回值。
     """
+    import pancake_web.decorators as _decorators
     from pancake.factory.dough_factory import DoughFactory
-    from pancake_web.decorators import resolve_handler_args, resolve_response
 
     for (method, path), (cls, handler_name) in _route_registry.items():
         # 从 IoC 容器获取 Controller 实例
@@ -87,11 +87,11 @@ def register_routes(app: web.Application):
         async def aiohttp_handler(request, _handler=handler, _name=f"{cls.__name__}.{handler_name}"):
             try:
                 # 1. 解析参数（Spring 风格）
-                kwargs = await resolve_handler_args(request, _handler)
+                kwargs = await _decorators.resolve_handler_args(request, _handler)
                 # 2. 调用 handler
                 result = await _handler(**kwargs)
                 # 3. 自动转为 Response
-                return await resolve_response(result, _handler)
+                return await _decorators.resolve_response(result, _handler)
             except web.HTTPException:
                 raise
             except Exception as e:
