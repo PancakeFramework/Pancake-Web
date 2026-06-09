@@ -47,6 +47,23 @@ def request_body():
     return _RequestBody()
 
 
+def template(template_name: str):
+    """@template — handler 返回 dict 自动渲染为 HTML 页面
+
+    需要安装 pancake-web-template 插件提供渲染引擎。
+
+    Usage:
+        @get("/home")
+        @template("home.html")
+        async def home(self, request):
+            return {"title": "首页", "items": [1, 2, 3]}
+    """
+    def decorator(func):
+        func._template_name = template_name
+        return func
+    return decorator
+
+
 # ── 路由方法标记 ──────────────────────────────────────
 
 

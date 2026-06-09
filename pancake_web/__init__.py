@@ -31,10 +31,11 @@ class Main(InitAction):
         export(delete)
 
         # 参数绑定
-        from pancake_web.decorators import path_variable, request_param, request_body
+        from pancake_web.decorators import path_variable, request_param, request_body, template
         export(path_variable)
         export(request_param)
         export(request_body)
+        export(template)
 
         # 中间件
         from pancake_web.middleware import middleware
