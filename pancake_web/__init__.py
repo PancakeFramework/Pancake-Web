@@ -53,6 +53,11 @@ class Main(InitAction):
         from pancake_web.server import WebServer
         export(WebServer)
 
+        # 设置 WebServer 为主线程 loop_method
+        from pancake import settings
+        if not settings.get("framework.main_loop"):
+            settings.set("framework.main_loop", "WebServer")
+
         logger.info("Web 插件已加载")
 
     def check(self) -> bool:
@@ -64,7 +69,7 @@ class Main(InitAction):
             return False
 
         # 2. 校验端口
-        port = settings.get("web.port")
+        port = settings.get("pancake.web.port")
         try:
             port = int(port)
             if not (1 <= port <= 65535):

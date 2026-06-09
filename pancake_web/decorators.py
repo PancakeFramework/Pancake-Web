@@ -158,6 +158,17 @@ async def resolve_handler_args(request: web.Request, handler) -> dict:
 # ── 返回值解析 ──────────────────────────────────────────
 
 
+def _convert_serializable(obj):
+    """递归转换 dataclass 对象为 dict（用于 JSON 序列化）"""
+    if is_dataclass(obj) and not isinstance(obj, type):
+        return asdict(obj)
+    if isinstance(obj, list):
+        return [_convert_serializable(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: _convert_serializable(v) for k, v in obj.items()}
+    return obj
+
+
 async def resolve_response(result) -> web.Response:
     """自动将 handler 返回值转为 web.Response
 
@@ -197,9 +208,9 @@ async def resolve_response(result) -> web.Response:
     if is_dataclass(result) and not isinstance(result, type):
         return JsonResponse(asdict(result))
 
-    # dict/list
+    # dict/list（递归转换其中的 dataclass 对象）
     if isinstance(result, (dict, list)):
-        return JsonResponse(result)
+        return JsonResponse(_convert_serializable(result))
 
     # str
     if isinstance(result, str):

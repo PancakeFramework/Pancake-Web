@@ -13,40 +13,65 @@ logger = logging.getLogger(__name__)
 class WebServer(Dough):
     """aiohttp Web 服务器
 
-    配置项从 settings 读取，缺省值已在主框架 settings.py 定义。
-    用户可在 src/resource/yaml/web.yaml 中覆盖。
+    配置项从 settings 读取（pancake.web.* 前缀），缺省值在插件内定义。
+    用户可在 src/resource/yaml/ 的 YAML 中覆盖。
     """
 
     _scope = Scope.SINGLETON
 
+    # 插件默认配置
+    _defaults = {
+        "pancake.web.host": "127.0.0.1",
+        "pancake.web.port": 8080,
+        "pancake.web.debug": False,
+        "pancake.web.static": os.path.join("src", "static"),
+        "pancake.web.templates": os.path.join("src", "templates"),
+        "pancake.web.cors.allow_origins": "*",
+        "pancake.web.cors.allow_methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "pancake.web.cors.allow_headers": "*",
+        "pancake.web.cors.max_age": 3600,
+        "pancake.web.session.secret_key": None,
+        "pancake.web.session.max_age": 86400,
+        "pancake.web.session.secure": False,
+        "pancake.web.request.timeout": 30,
+        "pancake.web.request.max_body_size": 1048576,
+        "pancake.web.server.max_connections": 100,
+        "pancake.web.server.backlog": 128,
+    }
+
+    def _get(self, key):
+        """获取配置：用户配置 > 插件默认值"""
+        from pancake import settings
+        val = settings.get(key)
+        return val if val is not None else self._defaults.get(key)
+
     def __init__(self):
         super().__init__()
-        from pancake import settings
 
-        self.host = settings.get("web.host")
-        self.port = settings.get("web.port")
-        self.debug = settings.get("web.debug")
-        self.static_dir = settings.get("web.static")
-        self.template_dir = settings.get("web.templates")
+        self.host = self._get("pancake.web.host")
+        self.port = self._get("pancake.web.port")
+        self.debug = self._get("pancake.web.debug")
+        self.static_dir = self._get("pancake.web.static")
+        self.template_dir = self._get("pancake.web.templates")
 
         # CORS
-        self.cors_origins = settings.get("web.cors.allow_origins")
-        self.cors_methods = settings.get("web.cors.allow_methods")
-        self.cors_headers = settings.get("web.cors.allow_headers")
-        self.cors_max_age = settings.get("web.cors.max_age")
+        self.cors_origins = self._get("pancake.web.cors.allow_origins")
+        self.cors_methods = self._get("pancake.web.cors.allow_methods")
+        self.cors_headers = self._get("pancake.web.cors.allow_headers")
+        self.cors_max_age = self._get("pancake.web.cors.max_age")
 
         # Session
-        self.session_secret = settings.get("web.session.secret_key")
-        self.session_max_age = settings.get("web.session.max_age")
-        self.session_secure = settings.get("web.session.secure")
+        self.session_secret = self._get("pancake.web.session.secret_key")
+        self.session_max_age = self._get("pancake.web.session.max_age")
+        self.session_secure = self._get("pancake.web.session.secure")
 
         # Request
-        self.request_timeout = settings.get("web.request.timeout")
-        self.max_body_size = settings.get("web.request.max_body_size")
+        self.request_timeout = self._get("pancake.web.request.timeout")
+        self.max_body_size = self._get("pancake.web.request.max_body_size")
 
         # Server
-        self.max_connections = settings.get("web.server.max_connections")
-        self.backlog = settings.get("web.server.backlog")
+        self.max_connections = self._get("pancake.web.server.max_connections")
+        self.backlog = self._get("pancake.web.server.backlog")
 
         self._app = None
         self._runner = None
