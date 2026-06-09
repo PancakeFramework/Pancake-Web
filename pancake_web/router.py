@@ -13,9 +13,6 @@ _controller_registry: dict[type, str] = {}
 # 方法级: {(method, full_path): (controller_cls, handler_name)}
 _route_registry: dict[tuple[str, str], tuple] = {}
 
-# 模板渲染器（由 pancake-web-template 等插件注册）
-_template_renderer = None
-
 
 def controller(prefix: str = ""):
     """@controller — 标记类为 Web 控制器，自动注册为 Dough 子类
@@ -93,12 +90,7 @@ def register_routes(app: web.Application):
                 kwargs = await resolve_handler_args(request, _handler)
                 # 2. 调用 handler
                 result = await _handler(**kwargs)
-                # 3. @template 自动渲染（如果模板渲染器已注册）
-                if isinstance(result, dict) and hasattr(_handler, "_template_name"):
-                    if _template_renderer:
-                        return _template_renderer(_handler._template_name, **result)
-                    logger.warning(f"Handler {_name} 使用了 @template 但未安装模板插件")
-                # 4. 自动转为 Response
+                # 3. 自动转为 Response
                 return await resolve_response(result)
             except web.HTTPException:
                 raise
@@ -114,18 +106,3 @@ def clear_registries():
     """清空所有注册表（用于测试）"""
     _controller_registry.clear()
     _route_registry.clear()
-
-
-def register_template_renderer(renderer):
-    """注册模板渲染器（由模板插件调用）
-
-    renderer 签名: renderer(template_name: str, **context) -> web.Response
-    """
-    global _template_renderer
-    _template_renderer = renderer
-    logger.info("模板渲染器已注册")
-
-
-def get_template_renderer():
-    """获取已注册的模板渲染器"""
-    return _template_renderer
