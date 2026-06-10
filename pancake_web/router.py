@@ -91,7 +91,7 @@ def register_routes(app: web.Application):
                 # 2. 调用 handler
                 result = await _handler(**kwargs)
                 # 3. 自动转为 Response
-                return await _decorators.resolve_response(result, _handler)
+                return await _decorators.resolve_response(result, _handler, request)
             except web.HTTPException:
                 raise
             except Exception as e:

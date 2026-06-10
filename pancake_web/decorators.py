@@ -169,7 +169,7 @@ def _convert_serializable(obj):
     return obj
 
 
-async def resolve_response(result, _handler=None) -> web.Response:
+async def resolve_response(result, _handler=None, request=None) -> web.Response:
     """自动将 handler 返回值转为 web.Response
 
     转换规则:
@@ -194,7 +194,7 @@ async def resolve_response(result, _handler=None) -> web.Response:
         data = result[0]
         status = result[1] if len(result) > 1 else 200
         headers = result[2] if len(result) > 2 else None
-        resp = await resolve_response(data)
+        resp = await resolve_response(data, _handler, request)
         new_resp = web.Response(
             body=resp.body,
             status=status,
