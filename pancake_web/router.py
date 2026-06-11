@@ -98,6 +98,8 @@ def register_routes(app: web.Application):
                 logger.error(f"Handler {_name} 异常: {e}", exc_info=True)
                 raise
 
+        # 保留原始 handler 引用，供 AuthorizationMiddleware 读取装饰器标记
+        aiohttp_handler._original_handler = handler
         app.router.add_route(method, path, aiohttp_handler)
         logger.info(f"路由已注册: {method} {path} -> {cls.__name__}.{handler_name}")
 

@@ -152,6 +152,20 @@ async def resolve_handler_args(request: web.Request, handler) -> dict:
                 kwargs[pname] = body
             continue
 
+        # Struct/dataclass 注解自动从 JSON body 解析（无需 request_body() 标记）
+        ann = param.annotation
+        if ann and ann is not inspect.Parameter.empty and is_dataclass(ann):
+            try:
+                body = await request.json()
+            except (json.JSONDecodeError, Exception):
+                body = {}
+            try:
+                kwargs[pname] = ann(**body)
+            except TypeError as e:
+                logger.warning(f"Struct 解析失败: {e}")
+                kwargs[pname] = body
+            continue
+
     return kwargs
 
 
