@@ -91,13 +91,15 @@ def register_routes(app: web.Application):
                 # 2. 调用 handler
                 result = await _handler(**kwargs)
                 # 3. 自动转为 Response
-                return await _decorators.resolve_response(result, _handler)
+                return await _decorators.resolve_response(result, _handler, request)
             except web.HTTPException:
                 raise
             except Exception as e:
                 logger.error(f"Handler {_name} 异常: {e}", exc_info=True)
                 raise
 
+        # 保留原始 handler 引用，供 AuthorizationMiddleware 读取装饰器标记
+        aiohttp_handler._original_handler = handler
         app.router.add_route(method, path, aiohttp_handler)
         logger.info(f"路由已注册: {method} {path} -> {cls.__name__}.{handler_name}")
 
