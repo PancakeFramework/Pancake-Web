@@ -158,7 +158,10 @@ class WebServer(Dough):
     async def stop(self):
         """停止 Web 服务器"""
         if self._runner:
-            await self._runner.cleanup()
+            try:
+                await self._runner.cleanup()
+            except AttributeError:
+                pass
             self._runner = None
             self._app = None
             logger.info("Web 服务器已停止")
